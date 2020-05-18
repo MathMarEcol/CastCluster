@@ -17,7 +17,8 @@ gg_sim_mat <- function(sim_mat,
                        cast_ob = NULL,
                        sort_among_clust = TRUE,
                        sort_within_clust = TRUE,
-                       highlight = FALSE
+                       highlight = FALSE,
+                       legend_label = "Similarity"
                        ){
 
   if(!is.null(cast_ob)) {
@@ -73,7 +74,8 @@ gg_sim_mat <- function(sim_mat,
     ggplot2::scale_fill_gradient(low = "black", high = "white") +
     ggplot2::coord_fixed() +
     ggthemes::theme_tufte() +
-    ggplot2::scale_y_reverse()
+    ggplot2::scale_y_reverse() +
+    ggplot2::labs(fill = legend_label)
   if(highlight & !is.null(cast_ob)){
     p <- p + ggplot2::annotate(geom = "rect", xmin = rects$xmin, ymin = rects$xmin, xmax = rects$xmax, ymax = rects$xmax,  colour = "red", fill = NA)
   }
