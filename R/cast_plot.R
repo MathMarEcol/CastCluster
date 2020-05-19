@@ -75,6 +75,7 @@ gg_sim_mat <- function(sim_mat,
     ggplot2::coord_fixed() +
     ggthemes::theme_tufte() +
     ggplot2::scale_y_reverse() +
+    ggplot2::scale_x_discrete(position = "top") +
     ggplot2::labs(fill = legend_label, x = NULL, y = NULL) 
   if(highlight & !is.null(cast_ob)){
     p <- p + ggplot2::annotate(geom = "rect", xmin = rects$xmin, ymin = rects$xmin, xmax = rects$xmax, ymax = rects$xmax,  colour = "red", fill = NA)
