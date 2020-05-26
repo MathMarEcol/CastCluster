@@ -48,18 +48,8 @@ cast_k <- function(sim_mat, k,
     clust_aff_n <- do.call(c, lapply(cast_ob, length))
     clust_aff <- clust_aff_sum * rep(1 / clust_aff_n, each = nrow(clust_aff_sum))
     if(length(cast_ob) > k){
-      ## ##Merge two most similar clusters
-      ## clust_sim <- clust_sim[!(clust_sim$Var1 == clust_sim$Var2),]
-      ## clust_merge <- clust_sim[which.max(clust_sim$affs),]
-      ## cast_ob[[clust_merge$Var1]] <- c(cast_ob[[clust_merge$Var1]], cast_ob[[clust_merge$Var2]])
-      ## cast_ob[[clust_merge$Var2]] <- NULL
-      ## Remove weakest cluster
       clust_sim <- clust_sim[(clust_sim$Var1 == clust_sim$Var2),]
       clust_remove <- which.min(clust_sim$affs)
-
-      ##I need to follow the logic of cast_compact
-      ##Simplify, I just pick one move at a time until all sites are gone
-      ##then use cast_stabilize() to finish then job
 
       clust_aff[, clust_remove] <- -2
 
@@ -96,13 +86,29 @@ cast_k <- function(sim_mat, k,
       ##Stabilise
       cast_ob <- cast_stabilize(cast_ob, aff_thres = 0, sim_mat)
     } else {
-      ##Seed the weakest object into a new cluster
-      clust_current <- clust_aff[ind]
+      ## Split the cluster with the most residual variance.
+      ## A good cluster to split has a mix of low and high
+      ## similarities
 
-      new_seed <- which.min(clust_current)
-      from <- clust_ind$clust[new_seed]
-      cast_ob[[from]] <- cast_ob[[from]][cast_ob[[from]] != new_seed]
-      cast_ob[[length(cast_ob) + 1]] <- c(new_seed)
+      aff_var <- aff_clust_var(sim_mat, cast_ob)
+
+      clust_max_var <- which.max(aff_var)
+
+      clust_mat <- sim_mat[cast_ob[[clust_max_var]], cast_ob[[clust_max_var]], drop = FALSE]
+      clust_upper <-clust_mat[upper.tri(clust_mat)]
+      clust_mean <- mean(clust_upper)
+      new_clusts <- cast_alg(clust_mat, clust_mean)
+
+      assertthat::assert_that(length(new_clusts) >= 2)
+
+      ## Translate new_clusts into sim_mat indices
+      clust_mapped <- lapply(new_clusts, function(nclust,old_clust){
+        trans_clust <- old_clust[nclust]
+      }, old_clust = cast_ob[[clust_max_var]])
+
+      cast_ob[[clust_max_var]] <- NULL
+      cast_ob <- c(cast_ob, clust_mapped)
+
 
       ##Stabilise
       cast_ob <- cast_stabilize(cast_ob, aff_thres = 0, sim_mat)
@@ -113,4 +119,22 @@ cast_k <- function(sim_mat, k,
 
   return(cast_ob)
 
+}
+
+aff_clust_var <- function(sim_mat, cast_ob){
+
+  do.call(cbind, lapply(1:length(cast_ob), 
+                        function(clust, sim_mat, cast_ob){
+
+                          ##get the affinity to each cluster
+                          if(length(cast_ob[[clust]]) > 0){
+                            clust_mat <- sim_mat[cast_ob[[clust]], cast_ob[[clust]], drop = FALSE]
+                            clust_upper <-clust_mat[upper.tri(clust_mat)]
+                            sim_var <- var(clust_upper)
+                            return(sim_var)
+                          } else {
+                            ##empty clusters have 0 affinity
+                            return(0)
+                          }
+                        }, cast_ob = cast_ob, sim_mat = sim_mat))
 }
