@@ -26,9 +26,18 @@ gg_sim_mat <- function(sim_mat,
 
     if(sort_within_clust){
       cast_ob <- lapply(cast_ob, function(clust, sim_mat){
-        ##sort by strength of affinity to cluster
-        ord <- order(rowMeans(sim_mat[clust, clust, drop = FALSE]))
-        return(clust[ord])
+        if(length(clust) > 1){
+          aff_btw_wide <- sim_mat[clust,clust]
+
+          aff_dist <- dist(aff_btw_wide)
+          aff_sort <- hclust(aff_dist)
+
+          clust_reorder <- aff_sort$order
+          ##sort by strength of affinity to cluster
+          return(clust[clust_reorder])
+        } else {
+          return(clust)
+        }
       },  sim_mat = sim_mat)
     }
     if(sort_among_clust) {
