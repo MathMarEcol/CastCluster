@@ -109,6 +109,22 @@ cast_k <- function(sim_mat, k,
       cast_ob[[clust_max_var]] <- NULL
       cast_ob <- c(cast_ob, clust_mapped)
 
+      ##debug duplicate id's
+      test_id <- nrow(sim_mat) - sum(sapply(cast_ob, length))
+      print(test_id)
+
+      if(test_id != 0) {
+        print(aff_var)
+        print(clust_max_var)
+        print(new_clusts)
+        print(clust_mapped)
+        print(sort(do.call(c, cast_ob)))
+        print(seq.int(sum(sapply(cast_ob, length))))
+        print(cast_ob)
+        print(test_id)
+
+
+      }
 
       ##Stabilise
       cast_ob <- cast_stabilize(cast_ob, aff_thres = 0, sim_mat)
