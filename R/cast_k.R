@@ -32,15 +32,7 @@ cast_k <- function(sim_mat, k,
     clust_sim <- aff_cluster_between(cast_ob, sim_mat)
     clust_sim_mat <- matrix(clust_sim$affs, nrow = length(cast_ob), ncol =length(cast_ob) )
     ##get mapping from elements to clusters
-    clust_ind <- lapply(seq_along(cast_ob), function(clust, cast_ob){
-      if(length(cast_ob[[clust]]) > 0) {
-        return(data.frame(elem = cast_ob[[clust]], clust = clust))
-      } else {
-        return(NULL)
-      }
-    }, cast_ob = cast_ob)
-    clust_ind <- do.call(rbind, clust_ind)
-    clust_ind <- clust_ind[order(clust_ind$elem), ]
+    clust_ind <- obj_clust_lut(cast_ob)
     ind <- clust_ind$elem + (clust_ind$clust - 1) * nrow(clust_ind)
 
     ## matrix, sum affinity and cluster N matrix
@@ -153,4 +145,17 @@ aff_clust_var <- function(sim_mat, cast_ob){
                             return(0)
                           }
                         }, cast_ob = cast_ob, sim_mat = sim_mat))
+}
+
+obj_clust_lut <- function(cast_ob){
+  clust_ind <- lapply(seq_along(cast_ob), function(clust, cast_ob){
+    if(length(cast_ob[[clust]]) > 0) {
+      return(data.frame(elem = cast_ob[[clust]], clust = clust))
+    } else {
+      return(NULL)
+    }
+  }, cast_ob = cast_ob)
+  clust_ind <- do.call(rbind, clust_ind)
+  clust_ind <- clust_ind[order(clust_ind$elem), ]
+  return(clust_ind)
 }
