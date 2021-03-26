@@ -74,7 +74,7 @@ cast_compact <- function(cast_ob, sim_mat, aff_thres, max_iter = nrow(sim_mat)*2
   ## ## matrix, sum affinity and cluster N matrix
   ## clust_aff_n_master <- do.call(c, lapply(cast_ob, length))
   ## clust_aff_master <- clust_aff_sum_master * rep(1 / clust_aff_n_master, each = nrow(clust_aff_sum_master))
-  clust_aff_master <- castcluster:::.aff_clust_mean(sim_mat, cast_obj, aff_thres)
+  clust_aff_master <- castcluster:::.aff_clust_mean(sim_mat, cast_ob, aff_thres)
   ## print(range(clust_aff_master))
   repeat{
     if(length(cast_ob) <= 1){
@@ -112,9 +112,9 @@ cast_compact <- function(cast_ob, sim_mat, aff_thres, max_iter = nrow(sim_mat)*2
     ## print(range(clust_aff))
     ##sites that should not be moved, to preserve aff_thres
     locked_sites <- numeric(0)
-  within_clust_affs <- do.call(c, lapply(seq_along(cast_obj), function(clust, cast_obj, clust_aff){
-    mean(clust_aff[ cast_obj[[clust]], clust])
-  }, clust_aff = clust_aff, cast_obj = cast_obj))
+  within_clust_affs <- do.call(c, lapply(seq_along(cast_ob), function(clust, cast_ob, clust_aff){
+    mean(clust_aff[ cast_ob[[clust]], clust])
+  }, clust_aff = clust_aff, cast_ob = cast_ob))
 
     ##disband and stabilize
     iter <- 1
@@ -190,11 +190,11 @@ cast_compact <- function(cast_ob, sim_mat, aff_thres, max_iter = nrow(sim_mat)*2
           ## clust_aff_n[upd$to] <- clust_aff_n[upd$to] + 1
           ## clust_aff_sum[, upd$to] <- clust_sum_to
           ## clust_aff[, upd$to] <- clust_aff_sum[, upd$to] * (1 / clust_aff_n[upd$to])
-          clust_aff[, upd$to] <- castcluster:::.aff_clust_mean(sim_mat, cast_obj[upd$to], aff_thres)
+          clust_aff[, upd$to] <- castcluster:::.aff_clust_mean(sim_mat, cast_ob[upd$to], aff_thres)
           within_clust_affs[upd$to] <- clust_aff_to
 
           if(upd$from != clust_id){
-            clust_aff[, upd$from] <- castcluster:::.aff_clust_mean(sim_mat, cast_obj[upd$from], aff_thres)
+            clust_aff[, upd$from] <- castcluster:::.aff_clust_mean(sim_mat, cast_ob[upd$from], aff_thres)
             within_clust_affs[upd$from] <- clust_aff_from
           }
           locked_sites <- numeric(0)
@@ -202,13 +202,13 @@ cast_compact <- function(cast_ob, sim_mat, aff_thres, max_iter = nrow(sim_mat)*2
           if(length(from_clust) == 0) {
             ##from cluster is empty: remove
             message("cluster [", upd$from, "] has been removed.")
-            cast_obj[[upd$from]] <- NULL
+            cast_ob[[upd$from]] <- NULL
             clust_aff <- clust_aff[, -upd$from]
             within_clust_affs  <- within_clust_affs[-upd$from]
 
-            clust_ind <- lapply(seq_along(cast_obj), function(clust, cast_obj){
-              data.frame(elem = cast_obj[[clust]], clust = clust)
-            }, cast_obj = cast_obj)
+            clust_ind <- lapply(seq_along(cast_ob), function(clust, cast_ob){
+              data.frame(elem = cast_ob[[clust]], clust = clust)
+            }, cast_ob = cast_ob)
             clust_ind <- do.call(rbind, clust_ind)
             clust_ind <- clust_ind[order(clust_ind$elem), ]
             if(from_clust == clust_id) {
