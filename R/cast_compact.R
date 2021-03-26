@@ -211,7 +211,7 @@ cast_compact <- function(cast_ob, sim_mat, aff_thres, max_iter = nrow(sim_mat)*2
             }, cast_ob = cast_ob)
             clust_ind <- do.call(rbind, clust_ind)
             clust_ind <- clust_ind[order(clust_ind$elem), ]
-            if(from_clust == clust_id) {
+            if (upd$from == clust_id) {
               ##Target cluster has been removed
               clust_id <- -1
               is_removed <- TRUE
