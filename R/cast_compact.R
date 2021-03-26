@@ -112,9 +112,9 @@ cast_compact <- function(cast_ob, sim_mat, aff_thres, max_iter = nrow(sim_mat)*2
     ## print(range(clust_aff))
     ##sites that should not be moved, to preserve aff_thres
     locked_sites <- numeric(0)
-  within_clust_affs <- do.call(c, lapply(seq_along(cast_ob), function(clust, cast_ob, clust_aff){
-    mean(clust_aff[ cast_ob[[clust]], clust])
-  }, clust_aff = clust_aff, cast_ob = cast_ob))
+    within_clust_affs <- do.call(c, lapply(seq_along(cast_test), function(clust, cast_ob, clust_aff){
+    mean(clust_aff[cast_ob[[clust]], clust])
+  }, clust_aff = clust_aff, cast_ob = cast_test))
 
     ##disband and stabilize
     iter <- 1
@@ -167,7 +167,7 @@ cast_compact <- function(cast_ob, sim_mat, aff_thres, max_iter = nrow(sim_mat)*2
         is_improve_to <- within_clust_affs[upd$to] <= clust_aff_to
         is_improve_from <- within_clust_affs[upd$from] <= clust_aff_from
 
-        if(upd$from == clust_id){
+        if(!is_removed && upd$from == clust_id){
           ##Update is moving a site from the disbanded cluster
 
 
@@ -190,11 +190,11 @@ cast_compact <- function(cast_ob, sim_mat, aff_thres, max_iter = nrow(sim_mat)*2
           ## clust_aff_n[upd$to] <- clust_aff_n[upd$to] + 1
           ## clust_aff_sum[, upd$to] <- clust_sum_to
           ## clust_aff[, upd$to] <- clust_aff_sum[, upd$to] * (1 / clust_aff_n[upd$to])
-          clust_aff[, upd$to] <- castcluster:::.aff_clust_mean(sim_mat, cast_ob[upd$to], aff_thres)
+          clust_aff[, upd$to] <- castcluster:::.aff_clust_mean(sim_mat, cast_test[upd$to], aff_thres)
           within_clust_affs[upd$to] <- clust_aff_to
 
-          if(upd$from != clust_id){
-            clust_aff[, upd$from] <- castcluster:::.aff_clust_mean(sim_mat, cast_ob[upd$from], aff_thres)
+          if(is_removed || upd$from != clust_id){
+            clust_aff[, upd$from] <- castcluster:::.aff_clust_mean(sim_mat, cast_test[upd$from], aff_thres)
             within_clust_affs[upd$from] <- clust_aff_from
           }
           locked_sites <- numeric(0)
@@ -202,18 +202,17 @@ cast_compact <- function(cast_ob, sim_mat, aff_thres, max_iter = nrow(sim_mat)*2
           if(length(from_clust) == 0) {
             ##from cluster is empty: remove
             message("cluster [", upd$from, "] has been removed.")
-            cast_ob[[upd$from]] <- NULL
+            cast_test[[upd$from]] <- NULL
             clust_aff <- clust_aff[, -upd$from]
             within_clust_affs  <- within_clust_affs[-upd$from]
 
-            clust_ind <- lapply(seq_along(cast_ob), function(clust, cast_ob){
+            clust_ind <- lapply(seq_along(cast_test), function(clust, cast_ob){
               data.frame(elem = cast_ob[[clust]], clust = clust)
-            }, cast_ob = cast_ob)
+            }, cast_ob = cast_test)
             clust_ind <- do.call(rbind, clust_ind)
             clust_ind <- clust_ind[order(clust_ind$elem), ]
-            if (upd$from == clust_id) {
+            if (!is_removed && upd$from == clust_id) {
               ##Target cluster has been removed
-              clust_id <- -1
               is_removed <- TRUE
             }
           }
