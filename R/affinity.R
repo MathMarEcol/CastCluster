@@ -67,10 +67,11 @@ aff_func <- function(x, u, sim_mat){
   assertthat::assert_that(is.numeric(u))
 
   ##Simple, this is just elements of sim_mat
-  return(sim_mat[u, ]*x)
+  return(sim_mat[, u] * x)
 }
 
 aff_clust_sum <- function(sim_mat, cast_ob){
+  diag(sim_mat) <- 0
   do.call(cbind, lapply(1:length(cast_ob), 
                         function(clust, sim_mat, cast_ob){
 
@@ -87,6 +88,41 @@ aff_clust_sum <- function(sim_mat, cast_ob){
                         }, cast_ob = cast_ob, sim_mat = sim_mat))
 }
 
+#' Internal function for aff_clust_mean,
+#'
+#' This function may be called directly if you
+#' can ensure that the diagonals of sim_mat
+#' are set to NA  `diag(sim_mat) <- NA`
+#' to speed up computation.
+.aff_clust_mean <- function(sim_mat, cast_ob, aff_thres){
+  aff_means <- do.call(cbind, lapply(1:length(cast_ob),
+                        function(clust, sim_mat, cast_ob){
+
+                          ##get the affinity to each cluster
+                          if(length(cast_ob[[clust]]) > 0){
+                            as_cols <- sim_mat[cast_ob[[clust]], , drop = FALSE]
+                            n <- dim(as_cols)[1]
+                            dn <- dim(as_cols)[2]
+                            return(.Internal(colMeans(as_cols, n, dn, TRUE)))
+                          } else {
+                            ##empty clusters have 0 affinity
+                            return(rep(0, nrow(sim_mat)))
+                          }
+                        }, cast_ob = cast_ob, sim_mat = sim_mat))
+  aff_means[is.nan(aff_means)] <- aff_thres
+  return(aff_means)
+  }
+
+#' Find mean affinity from each element to each cluster
+aff_clust_mean <- function(sim_mat, cast_ob, aff_thres){
+  if(!all(is.na(diag(sim_mat)))) {
+    diag(sim_mat) <- NA
+   }
+  castcluster:::.aff_clust_means(sim_mat, cast_ob, aff_thres)
+}
+
+#' Not used, behaves like aff_clust_mean
+#' @deprecate
 aff_clust_all <- function(sim_mat, cast_ob){
   do.call(cbind, lapply(1:length(cast_ob), 
                         function(clust, sim_mat, cast_ob){
@@ -100,21 +136,29 @@ aff_clust_all <- function(sim_mat, cast_ob){
                           }
                         }, cast_ob = cast_ob, sim_mat = sim_mat))
 }
+
 ##Across cluster affinity
 ##An assymetric distance, where the distance from a to b
 ##is the average affinity of elements in a to elements in b
 ##returns a long form dataframe
-aff_cluster_between <- function(cast_obj, sim_mat){
+aff_cluster_between <- function(cast_obj, sim_mat, aff_thres){
+  diag(sim_mat) <- NA
   pairs <- expand.grid(1:length(cast_obj), 1:length(cast_obj))
   affs <- apply(pairs, 1, function(p, cast_obj, sim_mat){
     elems_a <- cast_obj[[p[1]]]
     elems_b <- cast_obj[[p[2]]]
-    if(length(elems_a) > 1 && length(elems_b) > 1){
-      return(mean(rowSums(sim_mat[elems_a, elems_b])/length(elems_b)))
-    } else {
-      return(mean(sim_mat[elems_a, elems_b]))
-    }
-
+    return(mean(sim_mat[elems_a, elems_b], na.rm = TRUE))
   }, cast_obj = cast_obj, sim_mat = sim_mat)
-  return(data.frame(pairs, affs))
+  affs[is.nan(affs)] <- aff_thres
+  return(data.frame(x = pairs[,1], y = pairs[,2], affs))
+}
+
+##within cluster affinity
+##returns a list
+aff_clust_inner <- function(cast_obj, sim_mat){
+  lapply(seq_along(cast_obj), function(clust, cast_obj, sim_mat){
+    elem_cor <- sim_mat[cast_obj[[clust]], cast_obj[[clust]] ]
+    mean_aff <- mean(elem_cor)
+    return(mean_aff)
+  }, cast_obj = cast_obj, sim_mat = sim_mat)
 }

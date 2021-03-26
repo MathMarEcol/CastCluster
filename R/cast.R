@@ -1,6 +1,13 @@
 cast_alg <- function(sim_mat, aff_thres){
 ##rather than wrestle with integer sets, I will use boolean vectors
-  
+
+  ##Set the diagonal of sim_mat to 0
+  ##combined with division by n-1 during the removal stage
+  ##this has the effect of ignoring self affinity
+  ## when calculating cluster affinity.
+  sim_mat_diag <- diag(sim_mat)
+  diag(sim_mat) <- 0
+
   ##initialise, no clusters, and all elements belong to no clusters
   n <- nrow(sim_mat)
   clust <- list()
@@ -64,7 +71,10 @@ cast_alg <- function(sim_mat, aff_thres){
       }
 
       ##Removal stage
-      while(any(new_clust) && (min(aff_local[new_clust]/sum(new_clust)) < aff_thres)){
+      ##The `-1` in the denominator excludes the self affinity,
+      ##a cluster with 3 elements only has 2 affinity scores to average per element.
+      ##while elements from another cluster would have 3 affinity scores to average when testing affinity to this cluster.
+      while(sum(new_clust) > 1 && (min(aff_local[new_clust]/(sum(new_clust)-1)) < aff_thres)){
         minima <- which(aff_local == min(aff_local[new_clust]) & new_clust)
         new_elem <- minima[sample.int(length(minima), 1)] ##intention: take one of the max at random
         new_clust[new_elem] <- FALSE
@@ -77,13 +87,20 @@ cast_alg <- function(sim_mat, aff_thres){
         aff_local <- aff_local - aff_func(new_clust | spares, new_elem, sim_mat)
       }
 
-      if(all(!new_clust)){
-        ##cluster is empty
+      if(sum(new_clust) == 1){
+        ##cluster has only one element
+        if(next_seed == which(new_clust)){
+          ##Since seed failed to grow beyond one element, create an outlier cluster
+         break
+        }
+        ##If, somehow, we end up with a different final element to the seed, restart with
+        ## different seed
         valid_seeds[next_seed] <- FALSE
         message("seeds left: [", sum(valid_seeds), "]")
         if(all(!valid_seeds)){
           ##no more valid seeds exist, all have been tried, create a leftovers cluster
           new_clust <- spares
+          debug_spares_expected <- debug_spares_expected - sum(new_clust)
           spares <- rep(FALSE, n)
           break
         }

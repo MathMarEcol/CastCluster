@@ -57,13 +57,16 @@ cast_stabilize_batch <- function(cast_obj, aff_thres, sim_mat, max_iter = 20){
 }
 cast_stabilize <- function(cast_obj, aff_thres, sim_mat, max_iter = nrow(sim_mat)*2){
 
+  sim_mat_diag <- diag(sim_mat)
+  diag(sim_mat) <- NA
   ##matrix, mean affinity of each site to each cluster
   ##two cols must be updated each iteration
-  ## clust_aff <- aff_clust_all(sim_mat, cast_test)
-  clust_aff_sum <- aff_clust_sum(sim_mat, cast_obj)
-  ## matrix, sum affinity and cluster N matrix
-  clust_aff_n <- do.call(c, lapply(cast_obj, length))
-  clust_aff <- clust_aff_sum * rep(1 / clust_aff_n, each = nrow(clust_aff_sum))
+  ## ## clust_aff <- aff_clust_all(sim_mat, cast_test)
+  ## clust_aff_sum <- aff_clust_sum(sim_mat, cast_obj)
+  ## ## matrix, sum affinity and cluster N matrix
+  ## clust_aff_n <- do.call(c, lapply(cast_obj, length))
+  ## clust_aff <- clust_aff_sum * rep(1 / clust_aff_n, each = nrow(clust_aff_sum))
+  clust_aff <- castcluster:::.aff_clust_mean(sim_mat, cast_obj, aff_thres)
 
   ##maps element to cluster
   ##can be updated with a single value change each loop
@@ -75,7 +78,7 @@ cast_stabilize <- function(cast_obj, aff_thres, sim_mat, max_iter = nrow(sim_mat
 
   ##sites that should not be moved, to preserve aff_thres
   locked_sites <- c()
-  all_clust_affs <- do.call(c, lapply(seq_along(cast_obj), function(clust, cast_obj, clust_aff){
+  within_clust_affs <- do.call(c, lapply(seq_along(cast_obj), function(clust, cast_obj, clust_aff){
     mean(clust_aff[ cast_obj[[clust]], clust])
   }, clust_aff = clust_aff, cast_obj = cast_obj))
 
@@ -113,17 +116,25 @@ cast_stabilize <- function(cast_obj, aff_thres, sim_mat, max_iter = nrow(sim_mat
 
       to_clust <- c(cast_obj[[upd$to]], upd$i)
       from_clust <- cast_obj[[ upd$from ]][cast_obj[[ upd$from ]] != upd$i  ] 
-      clust_sum_to <- clust_aff_sum[, upd$to] + sim_mat[, upd$i]
-      clust_aff_to <- 1/(clust_aff_n[upd$to] + 1) *  mean(clust_sum_to[to_clust])
-      clust_sum_from <- clust_aff_sum[, upd$from] - sim_mat[, upd$i]
-      clust_aff_from <- 1/(clust_aff_n[upd$from] - 1) * mean(clust_sum_from[from_clust])
+      ## clust_sum_to <- clust_aff_sum[, upd$to] + sim_mat[, upd$i]
+      ## clust_aff_to <- 1/(clust_aff_n[upd$to] + 1) *  mean(clust_sum_to[to_clust])
+      clust_aff_to <- mean(castcluster:::.aff_clust_mean(sim_mat, list(to_clust), aff_thres)[to_clust])
+      ## clust_sum_from <- clust_aff_sum[, upd$from] - sim_mat[, upd$i]
+      ## clust_aff_from <- 1/(clust_aff_n[upd$from] - 1) * mean(clust_sum_from[from_clust])
+      clust_aff_from <- mean(castcluster:::.aff_clust_mean(sim_mat, list(from_clust), aff_thres)[from_clust])
 
-      ##Update is good if, after the update, both clusters have affinity above
-      ## aff_thres
+      ## Cluster may be eliminated
+      if(length(from_clust) == 0){
+        clust_aff_from <- aff_thres
+      }
+
+
+      ##Update is good if, after the update, both clusters have either affinity above
+      ## aff_thres, or improve affinity.
       is_above_to <- clust_aff_to >= aff_thres
       is_above_from <- clust_aff_from >= aff_thres
-      is_improve_to <- all_clust_affs[upd$to] <= clust_aff_to
-      is_improve_from <- all_clust_affs[upd$from] <= clust_aff_from
+      is_improve_to <- within_clust_affs[upd$to] <= clust_aff_to
+      is_improve_from <- within_clust_affs[upd$from] <= clust_aff_from
 
       is_update <- (is_above_to || is_improve_to)  && (is_above_from || is_improve_from)
 
@@ -137,19 +148,35 @@ cast_stabilize <- function(cast_obj, aff_thres, sim_mat, max_iter = nrow(sim_mat
 
         clust_ind[upd$i, 2] <- upd$to
 
-        clust_aff_n[upd$to] <- clust_aff_n[upd$to] + 1
-        clust_aff_sum[, upd$to] <- clust_sum_to
-        clust_aff[, upd$to] <- clust_aff_sum[, upd$to] * (1 / clust_aff_n[upd$to])
+        ## clust_aff_n[upd$to] <- clust_aff_n[upd$to] + 1
+        ## clust_aff_sum[, upd$to] <- clust_sum_to
+        ## clust_aff[, upd$to] <- clust_aff_sum[, upd$to] * (1 / clust_aff_n[upd$to])
+        clust_aff[, upd$to] <- castcluster:::.aff_clust_mean(sim_mat, cast_obj[upd$to], aff_thres)
 
-        clust_aff_n[upd$from] <- clust_aff_n[upd$from] - 1
-        clust_aff_sum[, upd$from] <- clust_sum_from
-        clust_aff[, upd$from] <- clust_aff_sum[, upd$from] * (1 / clust_aff_n[upd$from])
+        ## clust_aff_n[upd$from] <- clust_aff_n[upd$from] - 1
+        ## clust_aff_sum[, upd$from] <- clust_sum_from
+        ## clust_aff[, upd$from] <- clust_aff_sum[, upd$from] * (1 / clust_aff_n[upd$from])
+        clust_aff[, upd$from] <- castcluster:::.aff_clust_mean(sim_mat, cast_obj[upd$from], aff_thres)
 
-        all_clust_affs[upd$from] <- clust_aff_from
-        all_clust_affs[upd$to] <- clust_aff_to
+        within_clust_affs[upd$from] <- clust_aff_from
+        within_clust_affs[upd$to] <- clust_aff_to
 
         locked_sites <- c()
 
+        if(length(from_clust) == 0) {
+          ##from cluster is empty: remove
+          message("cluster [", upd$from, "] has been removed.")
+          cast_obj[[upd$from]] <- NULL
+          clust_aff <- clust_aff[, -upd$from]
+          within_clust_affs  <- within_clust_affs[-upd$from]
+
+          clust_ind <- lapply(seq_along(cast_obj), function(clust, cast_obj){
+            data.frame(elem = cast_obj[[clust]], clust = clust)
+          }, cast_obj = cast_obj)
+          clust_ind <- do.call(rbind, clust_ind)
+          clust_ind <- clust_ind[order(clust_ind$elem), ]
+
+        }
       } else {
         if(length(locked_sites ) > 0) {
           locked_sites <- c(locked_sites, upd$i)

@@ -1,20 +1,23 @@
 ##heirarchical grouping of cast objects
-##the aff_thres_list will be sorted
+##the aff_thres_vec will be sorted
 ##this function is recursive
-cast_h <- function(sim_mat, aff_thres_list, stabilize = FALSE, max_stab_iter = 20){
+cast_h <- function(sim_mat, aff_thres_vec, stabilize = FALSE, max_stab_iter = nrow(sim_mat) * 4){
   assertthat::assert_that(nrow(sim_mat) > 1)
-  aff_thres_list <- sort(aff_thres_list, decreasing = TRUE)
-  next_level <- cast_alg(sim_mat = sim_mat, aff_thres = aff_thres_list[1])
+  if(nrow(sim_mat == 1) {
+    return(list(list(clust = list(c(1)), affs = sim_mat)))
+  }
+  aff_thres_vec <- sort(aff_thres_vec, decreasing = TRUE)
+  next_level <- cast_alg(sim_mat = sim_mat, aff_thres = aff_thres_vec[1])
   if(stabilize){
     next_level <- cast_stabilize(sim_mat = sim_mat, cast_obj = next_level,
                                  max_iter = max_stab_iter,
-                                 aff_thres = aff_thres_list[1])
+                                 aff_thres = aff_thres_vec[1])
   }
-  if(length(aff_thres_list) > 1){
-    tmp <- aff_cluster_between(cast_obj = next_level, sim_mat = sim_mat)
+  if(length(aff_thres_vec) > 1){
+    tmp <- aff_cluster_between(cast_obj = next_level, sim_mat = sim_mat, aff_thres = aff_thres_vec[1])
      new_sim_mat <- matrix(tmp$affs, nrow = length(next_level), ncol = length(next_level))
     return(c(cast_h(sim_mat = new_sim_mat,
-                    aff_thres_list = aff_thres_list[-1],
+                    aff_thres_vec = aff_thres_vec[-1],
                     stabilize = stabilize,
                     max_stab_iter = max_stab_iter),
              list(list(clust = next_level, affs = new_sim_mat)) ))
