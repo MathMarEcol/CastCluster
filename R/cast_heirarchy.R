@@ -2,8 +2,7 @@
 ##the aff_thres_vec will be sorted
 ##this function is recursive
 cast_h <- function(sim_mat, aff_thres_vec, stabilize = FALSE, max_stab_iter = nrow(sim_mat) * 4){
-  assertthat::assert_that(nrow(sim_mat) > 1)
-  if(nrow(sim_mat == 1) {
+  if(nrow(sim_mat == 1)) {
     return(list(list(clust = list(c(1)), affs = sim_mat)))
   }
   aff_thres_vec <- sort(aff_thres_vec, decreasing = TRUE)
