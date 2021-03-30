@@ -70,6 +70,7 @@ cast_optimal_recurse <- function(sim_mat,
                          aff_range,
                          m,
                          min_range,
+                         min_tol,
                          rec_data,
                          rec_depth) {
 
@@ -81,15 +82,23 @@ cast_optimal_recurse <- function(sim_mat,
   aff_thres_parts <- seq(min(aff_range), max(aff_range), length.out = m)
   gamma_score <- do.call(rbind,
                          lapply(aff_thres_parts, function(aff_thres, sim_mat, rec_depth) {
-    clust_first_pass <- castcluster::cast_alg(sim_mat, aff_thres)
-    clust_stabilise <- castcluster::cast_stabilize(clust_first_pass,
-                                                   aff_thres,
-                                                   sim_mat)
+                           clust_first_pass <- castcluster::cast_alg(sim_mat, aff_thres)
+                           clust_stabilise <- castcluster::cast_stabilize(clust_first_pass,
+                                                                          aff_thres,
+                                                                          sim_mat)
 
-  mem_mat <- castcluster::membership_mat(clust_stabilise)
-  h <- castcluster::hubert_gamma(sim_mat, mem_mat, norm_z = TRUE)
-    return(data.frame(aff_thres = aff_thres, gamma = h, k = length(clust_stabilise), cast_ob = I(clust_stabilise), rec_depth = rec_depth))
-  },  sim_mat = sim_mat, rec_depth = rec_depth)
+                           if(length(clust_stabilise) == 1) {
+                             h <- NA
+                           } else {
+                             mem_mat <- castcluster::membership_mat(clust_stabilise)
+                             h <- castcluster::hubert_gamma(sim_mat, mem_mat, norm_z = TRUE)
+                           }
+                           return(data.frame(aff_thres = aff_thres, gamma = h,
+                                             k = length(clust_stabilise),
+                                             cast_ob = I(list(clust_stabilise)),
+                                             rec_depth = rec_depth))
+                         },  sim_mat = sim_mat, rec_depth = rec_depth)
+  )
 
   ## Find the best gamma score
   max_score_ind <- which.max(gamma_score$gamma)
