@@ -29,7 +29,7 @@ cast_k <- function(sim_mat, k,
 
   ##Add or remove clusters until k is reached.
   while(length(cast_ob) != k){
-    clust_sim <- aff_cluster_between(cast_ob, sim_mat)
+    clust_sim <- castclustr:::aff_cluster_between(cast_ob, sim_mat)
     clust_sim_mat <- matrix(clust_sim$affs, nrow = length(cast_ob), ncol =length(cast_ob) )
     ##get mapping from elements to clusters
     clust_ind <- obj_clust_lut(cast_ob)

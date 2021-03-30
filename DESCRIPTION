@@ -13,3 +13,4 @@ Encoding: UTF-8
 LazyData: true
 Imports: 
     assertthat
+RoxygenNote: 7.1.1

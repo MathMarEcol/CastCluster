@@ -13,6 +13,7 @@
 #'
 #' if highlight = TRUE, then rectangles will be drawn
 #' around each cluster.
+#' @export
 gg_sim_mat <- function(sim_mat,
                        cast_ob = NULL,
                        sort_among_clust = TRUE,
@@ -41,7 +42,7 @@ gg_sim_mat <- function(sim_mat,
       },  sim_mat = sim_mat)
     }
     if(sort_among_clust) {
-      aff_btw <- aff_cluster_between(sim_mat = sim_mat, cast_obj = cast_ob)
+      aff_btw <- castcluster:::aff_cluster_between(sim_mat = sim_mat, cast_obj = cast_ob)
 
       aff_btw_wide <- matrix(aff_btw$affs, sqrt(nrow(aff_btw)), sqrt(nrow(aff_btw)))
 
@@ -97,7 +98,7 @@ gg_sim_mat <- function(sim_mat,
 #' @export
 sort_between <- function(sim_mat, cast_ob){
 
-  aff_btw <- aff_cluster_between(sim_mat = sim_mat, cast_obj = cast_ob)
+  aff_btw <- castcluster:::aff_cluster_between(sim_mat = sim_mat, cast_obj = cast_ob)
 
   aff_btw_wide <- matrix(aff_btw$affs, sqrt(nrow(aff_btw)), sqrt(nrow(aff_btw)))
 

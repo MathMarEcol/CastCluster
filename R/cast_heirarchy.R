@@ -1,6 +1,7 @@
-##heirarchical grouping of cast objects
-##the aff_thres_vec will be sorted
-##this function is recursive
+#' heirarchical grouping of cast objects
+#' the aff_thres_vec will be sorted
+#' this function is recursive
+#' @export
 cast_h <- function(sim_mat, aff_thres_vec, stabilize = FALSE, max_stab_iter = nrow(sim_mat) * 4){
   if(nrow(sim_mat == 1)) {
     return(list(list(clust = list(c(1)), affs = sim_mat)))
@@ -13,7 +14,7 @@ cast_h <- function(sim_mat, aff_thres_vec, stabilize = FALSE, max_stab_iter = nr
                                  aff_thres = aff_thres_vec[1])
   }
   if(length(aff_thres_vec) > 1){
-    tmp <- aff_cluster_between(cast_obj = next_level, sim_mat = sim_mat, aff_thres = aff_thres_vec[1])
+    tmp <- castcluster:::aff_cluster_between(cast_obj = next_level, sim_mat = sim_mat, aff_thres = aff_thres_vec[1])
      new_sim_mat <- matrix(tmp$affs, nrow = length(next_level), ncol = length(next_level))
     return(c(cast_h(sim_mat = new_sim_mat,
                     aff_thres_vec = aff_thres_vec[-1],
@@ -21,14 +22,15 @@ cast_h <- function(sim_mat, aff_thres_vec, stabilize = FALSE, max_stab_iter = nr
                     max_stab_iter = max_stab_iter),
              list(list(clust = next_level, affs = new_sim_mat)) ))
   } else {
-    tmp <- aff_cluster_between(cast_obj = next_level, sim_mat = sim_mat)
+    tmp <- castcluster:::aff_cluster_between(cast_obj = next_level, sim_mat = sim_mat)
     new_sim_mat <- matrix(tmp$affs, nrow = length(next_level), ncol = length(next_level))
     return(list(list(clust = next_level, affs = new_sim_mat)))
   }
 }
 
-##unrolls the cast clusters to the desired depth
-##also recursive
+#' unrolls the cast clusters to the desired depth
+#' also recursive
+#' @export
 cast_h_reorder <- function(cast_h_obj, depth = length(cast_h_obj), reordering = NULL){
   assertthat::assert_that(depth > 0)
   assertthat::assert_that(depth <= length(cast_h_obj))

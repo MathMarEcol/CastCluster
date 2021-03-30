@@ -1,16 +1,10 @@
 #' Stabilize cluster membership
 #'
-#' cast_stabilize() works iteratively, updating one site at a time
-#' and recalculating the affinities each time.
-#' cast_stabilize() will only make an update if it either maintains
-#' all the average within cluster affinities above the threshold, or
-#' increases the within cluster affinities if one is already below the
-#' threshold.
-#'
 #' cast_stabilize_batch() does a bulk update, finding all sites that
 #' could be assigned to another cluster before recalulating the affinities.
 #' cast_stabilize_batch() always proceeds without checking the impact
 #' the update has on within-cluster affinities.
+#'
 cast_stabilize_batch <- function(cast_obj, aff_thres, sim_mat, max_iter = 20){
   iter <- 1
 
@@ -55,6 +49,17 @@ cast_stabilize_batch <- function(cast_obj, aff_thres, sim_mat, max_iter = 20){
   }
   return(cast_obj)
 }
+
+#' Stabilize cluster membership
+#'
+#' cast_stabilize() works iteratively, updating one site at a time
+#' and recalculating the affinities each time.
+#' cast_stabilize() will only make an update if it either maintains
+#' all the average within cluster affinities above the threshold, or
+#' increases the within cluster affinities if one is already below the
+#' threshold.
+#'
+#' @export
 cast_stabilize <- function(cast_obj, aff_thres, sim_mat, max_iter = nrow(sim_mat)*2){
 
   sim_mat_diag <- diag(sim_mat)

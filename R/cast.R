@@ -1,3 +1,5 @@
+#'
+#' @export
 cast_alg <- function(sim_mat, aff_thres){
 ##rather than wrestle with integer sets, I will use boolean vectors
 

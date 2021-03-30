@@ -4,7 +4,6 @@
 #' cast_alg_cautious stabilizes the matrix after every cluster is added,
 #' so we don't create a lot of small clusters on the edges.
 #' I expect to use all the sites faster.
-#' @deprecate
 cast_alg_cautious <- function(sim_mat, aff_thres, max_iter = 20){
 ##rather than wrestle with integer sets, I will use boolean vectors
   

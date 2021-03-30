@@ -1,14 +1,14 @@
-##Assign site to cluster
-##takes an affinity matrix, 
-## rows are sites to assign to clusters,
-## and cols are sites that make up the cast_obj
-## so the dimensions of the matrix
-## are n by length(cast_obj[[1]])
-## the rows are not expected to exist in
-## cast_obj
+#'Assign site to cluster
+#'takes an affinity matrix,
+#' rows are sites to assign to clusters,
+#' and cols are sites that make up the cast_obj
+#' so the dimensions of the matrix
+#' are n by length(cast_obj[[1]])
+#' the rows are not expected to exist in
+#' cast_obj
 
-##find which clusters a site could belong, given aff_thres
-##returns a data.frame with site, cluster, affinity
+#'find which clusters a site could belong, given aff_thres
+#'returns a data.frame with site, cluster, affinity
 predict_clust <- function(cast_obj, new_sim_mat){
   do.call("rbind", lapply(1:length(cast_obj), function(clust, cast_obj, new_sim_mat){
     if(length(cast_obj[[clust]]) > 1){
@@ -37,6 +37,7 @@ predict_clust <- function(cast_obj, new_sim_mat){
 #' For very large areas, a full nxn matrix may
 #' not fit it memory. However, the matrix becomes
 #' sparse, as k increases, so long form should always work.
+#'
 membership_mat <- function(cast_ob, is_long = FALSE){
   n_sites <- do.call(sum, lapply(cast_ob, length))
 
@@ -59,6 +60,7 @@ membership_mat <- function(cast_ob, is_long = FALSE){
   }
 }
 
+#' Affinity of element `x` to elements `u`
 aff_func <- function(x, u, sim_mat){
   ##Takes the vector x of rows and the row u of sim_match
   ##and returns the affinity from u to x
@@ -70,6 +72,7 @@ aff_func <- function(x, u, sim_mat){
   return(sim_mat[, u] * x)
 }
 
+#' Affinity of each element to each cluster
 aff_clust_sum <- function(sim_mat, cast_ob){
   diag(sim_mat) <- 0
   do.call(cbind, lapply(1:length(cast_ob), 
@@ -122,9 +125,8 @@ aff_clust_mean <- function(sim_mat, cast_ob, aff_thres){
 }
 
 #' Not used, behaves like aff_clust_mean
-#' @deprecate
 aff_clust_all <- function(sim_mat, cast_ob){
-  do.call(cbind, lapply(1:length(cast_ob), 
+  do.call(cbind, lapply(1:length(cast_ob),
                         function(clust, sim_mat, cast_ob){
 
                           ##get the affinity to each cluster
@@ -137,10 +139,10 @@ aff_clust_all <- function(sim_mat, cast_ob){
                         }, cast_ob = cast_ob, sim_mat = sim_mat))
 }
 
-##Across cluster affinity
-##An assymetric distance, where the distance from a to b
-##is the average affinity of elements in a to elements in b
-##returns a long form dataframe
+#' Across cluster affinity
+#' An assymetric distance, where the distance from a to b
+#' is the average affinity of elements in a to elements in b
+#' returns a long form dataframe
 aff_cluster_between <- function(cast_obj, sim_mat, aff_thres){
   diag(sim_mat) <- NA
   pairs <- expand.grid(1:length(cast_obj), 1:length(cast_obj))

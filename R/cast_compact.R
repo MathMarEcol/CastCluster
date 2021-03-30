@@ -60,6 +60,17 @@ cast_compact_batch <- function(cast_ob, sim_mat, aff_thres, max_iter = nrow(sim_
   }
   return(cast_ob)
 }
+
+#' cast_compact
+#'
+#' takes a stabilized cast object, and deletes
+#' one cluster, assignes the sites to nearest clusters,
+#' stabilizes again, and
+#' checks whether the average cluster affinity
+#' remains above the threshold. If the threshold is still valid,
+#' keep the changed cast algorithm, otherwise revert and try another cluster.
+#'
+#' @export
 cast_compact <- function(cast_ob, sim_mat, aff_thres, max_iter = nrow(sim_mat)*2){
   ##sort by size
   clust_remove <- 1
