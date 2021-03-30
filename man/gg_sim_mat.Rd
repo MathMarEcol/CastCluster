@@ -7,6 +7,7 @@
 gg_sim_mat(
   sim_mat,
   cast_ob = NULL,
+  aff_thres = NULL,
   sort_among_clust = TRUE,
   sort_within_clust = TRUE,
   highlight = FALSE,
