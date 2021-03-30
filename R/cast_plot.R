@@ -16,6 +16,7 @@
 #' @export
 gg_sim_mat <- function(sim_mat,
                        cast_ob = NULL,
+                       aff_thres = NULL,
                        sort_among_clust = TRUE,
                        sort_within_clust = TRUE,
                        highlight = FALSE,
@@ -42,7 +43,7 @@ gg_sim_mat <- function(sim_mat,
       },  sim_mat = sim_mat)
     }
     if(sort_among_clust) {
-      aff_btw <- castcluster:::aff_cluster_between(sim_mat = sim_mat, cast_obj = cast_ob)
+      aff_btw <- castcluster:::aff_cluster_between(sim_mat = sim_mat, cast_obj = cast_ob, aff_thres = aff_thres)
 
       aff_btw_wide <- matrix(aff_btw$affs, sqrt(nrow(aff_btw)), sqrt(nrow(aff_btw)))
 

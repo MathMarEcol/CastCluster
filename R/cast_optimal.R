@@ -46,7 +46,7 @@ cast_optimal <- function(sim_mat,
 
   ## Calculate Hubert's \Gamma statistic for each partition
   aff_thres_parts <- seq(min(aff_range), max(aff_range), length.out = m)
-  gamma_scores <- vapply(aff_thres_parts, function(aff_thres, sim_mat) {
+  gamma_score <- vapply(aff_thres_parts, function(aff_thres, sim_mat) {
     clust_first_pass <- castcluster::cast_alg(sim_mat, aff_thres)
     clust_stabilise <- castcluster::cast_stabilize(clust_first_pass,
                                                    aff_thres,
@@ -55,7 +55,7 @@ cast_optimal <- function(sim_mat,
   mem_mat <- castcluster::membership_mat(clust_stabilise)
   h <- castcluster::hubert_gamma(sim_mat, mem_mat, norm_z = TRUE)
     return(h)
-  }, sim_mat = sim_mat)
+  },  numeric(1), sim_mat = sim_mat)
 
   ## Find the best gamma score
   max_score_ind <- which.max(gamma_score)
@@ -75,8 +75,7 @@ cast_optimal <- function(sim_mat,
   max_aff <- aff_thres_parts[max_score_ind]
 
   ## Check whether to keep narrowing, or return
-
-  if(diff(range(gamma_score)) < min_tol | diff(new_range) < min_range) {
+  if(diff(range(gamma_score, na.rm = TRUE)) < min_tol | diff(new_range) < min_range) {
     return(max_aff)
   } else {
     return(cast_optimal(sim_mat = sim_mat,
