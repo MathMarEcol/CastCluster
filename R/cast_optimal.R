@@ -15,6 +15,9 @@
 #' dissimilarity, 1 indicates perfect similarity.
 #' The Diagonals are assumed to be 1, each element
 #' should be identical to itself.
+#' @param return_full if TRUE, return a data.frame
+#' with all metadata and cast objects. If FALSE,
+#' just return max aff_thres.
 #' @param aff_range minimum and maximum aff_thres
 #' to test. Best left as default to test the full
 #' range.
@@ -28,8 +31,10 @@
 #' statistic scores between the worst and best aff_thres
 #' for a run are less than `min_tol`, stop and
 #' return the best aff_thres
+#'
 #' @export
 cast_optimal <- function(sim_mat,
+                         return_full = TRUE,
                          aff_range = c(0,1),
                          m = 4,
                          min_range = 0.01,
@@ -41,12 +46,41 @@ cast_optimal <- function(sim_mat,
   assertthat::assert_that(all(min(aff_range) >= 0,  max(aff_range) <= 1, length(aff_range) == 2))
   assertthat::assert_that(min_tol > 0)
 
+  ##begin recursion
+  ret <- castcluster:::cast_optimal_recurse(sim_mat = sim_mat,
+                         aff_range = aff_range,
+                         m = m,
+                         min_range = min_range,
+                         min_tol = min_tol,
+                         rec_data = NULL,
+                         rec_depth = 1)
+
+  if(return_full) {
+    return(ret)
+  } else {
+    return(max(ret$gamma))
+  }
+}
+
+#' Recursive calculation of optimal aff_thres
+#'
+#' `cast_opminal` is a wrapper function that
+#' hides recursive parameters from the user.
+cast_optimal_recurse <- function(sim_mat,
+                         aff_range,
+                         m,
+                         min_range,
+                         rec_data,
+                         rec_depth) {
+
   ## Check for errors in recursion logic, or bad inputs
   assertthat::assert_that(diff(aff_range) > min_range)
 
+
   ## Calculate Hubert's \Gamma statistic for each partition
   aff_thres_parts <- seq(min(aff_range), max(aff_range), length.out = m)
-  gamma_score <- vapply(aff_thres_parts, function(aff_thres, sim_mat) {
+  gamma_score <- do.call(rbind,
+                         lapply(aff_thres_parts, function(aff_thres, sim_mat, rec_depth) {
     clust_first_pass <- castcluster::cast_alg(sim_mat, aff_thres)
     clust_stabilise <- castcluster::cast_stabilize(clust_first_pass,
                                                    aff_thres,
@@ -54,11 +88,11 @@ cast_optimal <- function(sim_mat,
 
   mem_mat <- castcluster::membership_mat(clust_stabilise)
   h <- castcluster::hubert_gamma(sim_mat, mem_mat, norm_z = TRUE)
-    return(h)
-  },  numeric(1), sim_mat = sim_mat)
+    return(data.frame(aff_thres = aff_thres, gamma = h, k = length(clust_stabilise), cast_ob = I(clust_stabilise), rec_depth = rec_depth))
+  },  sim_mat = sim_mat, rec_depth = rec_depth)
 
   ## Find the best gamma score
-  max_score_ind <- which.max(gamma_score)
+  max_score_ind <- which.max(gamma_score$gamma)
 
   new_range <- c(0,0)
   if(max_score_ind > 1) {
@@ -75,21 +109,21 @@ cast_optimal <- function(sim_mat,
   max_aff <- aff_thres_parts[max_score_ind]
 
   ## Check whether to keep narrowing, or return
-  if(diff(range(gamma_score, na.rm = TRUE)) < min_tol | diff(new_range) < min_range) {
-    return(max_aff)
+  if(diff(range(gamma_score$gamma, na.rm = TRUE)) < min_tol | diff(new_range) < min_range) {
+    return(rbind(rec_data, gamma_score))
   } else {
-    return(cast_optimal(sim_mat = sim_mat,
+    return(cast_optimal_recurse(sim_mat = sim_mat,
                         aff_range = new_range,
                         m = m,
                         min_range = min_range,
-                        min_tol = min_tol
+                        min_tol = min_tol,
+                        rec_data = rbind(rec_data, gamma_score),
+                        rec_depth = rec_depth + 1
                         )
            )
   }
 
-
-}
-
+  }
 
 #' Huberts Gamma statistic
 #'
