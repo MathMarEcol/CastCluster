@@ -104,15 +104,37 @@ cast_optimal_recurse <- function(sim_mat,
   max_score_ind <- which.max(gamma_score$gamma)
 
   new_range <- c(0,0)
-  if(max_score_ind > 1) {
-    new_range[1] <- aff_thres_parts[max_score_ind - 1]
+  ## if(max_score_ind > 1) {
+  ##   new_range[1] <- aff_thres_parts[max_score_ind - 1]
+  ## } else {
+  ##   new_range[1] <- aff_thres_parts[max_score_ind]
+  ## }
+  ## if(max_score_ind < m) {
+  ##   new_range[2] <- aff_thres_parts[max_score_ind + 1]
+  ## } else {
+  ##   new_range[2] <- aff_thres_parts[max_score_ind]
+  ## }
+
+  ## Remove the highest and lowest scores, unless
+  ## the max is on one end
+  gamma_na <- is.na(gamma_score$gamma)
+  if(any(gamma_na)) {
+    new_range[1] <- min(aff_thres_parts[!gamma_na])
+    new_range[2] <- max(aff_thres_parts[!gamma_na])
   } else {
-    new_range[1] <- aff_thres_parts[max_score_ind]
-  }
-  if(max_score_ind < m) {
-    new_range[2] <- aff_thres_parts[max_score_ind + 1]
-  } else {
-    new_range[2] <- aff_thres_parts[max_score_ind]
+    new_range[1] <- aff_thres_parts[2]
+    new_range[2] <- aff_thres_parts[m - 1]
+    if(max_score_ind == 1) {
+      new_range[1] <- min(aff_range) - diff(aff_thres_parts)[1] / 2
+      if(new_range[1] < 0) {
+        new_range[1] <- 0
+      }
+    } else if(max_score_ind == m) {
+      new_range[2] <- max(aff_range) + diff(aff_thres_parts)[1] / 2
+      if(new_range[1] > 1) {
+        new_range[1] <- 1
+      }
+    }
   }
 
   max_aff <- aff_thres_parts[max_score_ind]
