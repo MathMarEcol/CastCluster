@@ -2,10 +2,10 @@
 #'
 #' Given a similarity matrix `sim_mat`, where 1 is identical,
 #' and 0 is completely dissimilar, finds an affinity
-#' threshold that maximises Hubert's \Gamma statistic
+#' threshold that maximises Hubert's \eqn{\Gamma} statistic
 #' (Tseng and Kao, 2003).
 #'
-#' It is possible that Hubert's \Gamma statistic is
+#' It is possible that Hubert's \eqn{\Gamma} statistic is
 #' is optimised at aff_thres = mean(sim_mat) when
 #' the diagonals are ignored, which would make
 #' this function redundant.
@@ -27,7 +27,7 @@
 #' accuracy.
 #' @param min_range if aff_range is narrower than
 #' `min_range`, stop and return the best aff_thres.
-#' @param min_tol if the difference in Hubert's \Gamma
+#' @param min_tol if the difference in Hubert's \eqn{\Gamma}
 #' statistic scores between the worst and best aff_thres
 #' for a run are less than `min_tol`, stop and
 #' return the best aff_thres
