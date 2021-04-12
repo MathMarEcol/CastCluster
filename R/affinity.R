@@ -38,6 +38,7 @@ predict_clust <- function(cast_obj, new_sim_mat){
 #' not fit it memory. However, the matrix becomes
 #' sparse, as k increases, so long form should always work.
 #'
+#' @export
 membership_mat <- function(cast_ob, is_long = FALSE){
   n_sites <- do.call(sum, lapply(cast_ob, length))
 
