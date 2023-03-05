@@ -17,7 +17,7 @@
 #' should be identical to itself.
 #' @param return_full if TRUE, return a data.frame
 #' with all metadata and cast objects. If FALSE,
-#' just return max aff_thres.
+#' just return row with best clustering.
 #' @param aff_range minimum and maximum aff_thres
 #' to test. Best left as default to test the full
 #' range.
@@ -58,7 +58,7 @@ cast_optimal <- function(sim_mat,
   if(return_full) {
     return(ret)
   } else {
-    return(max(ret$gamma))
+    return(ret[,which.max(ret$gamma))
   }
 }
 
