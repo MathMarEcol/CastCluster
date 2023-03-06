@@ -6,6 +6,7 @@
 #' produces a ggplot ready data.frame.
 #' @param cast_ob A CAST object returned by a CAST method
 #' @return data.frame with $elem and $clust cols. Elem is a row id of the data passed into the CAST method.
+#'
 #' @export
 cast_obj_to_df <- function(cast_ob){
   clust_ind <- lapply(seq_along(cast_ob), function(clust, cast_ob){

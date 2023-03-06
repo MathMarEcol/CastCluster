@@ -22,7 +22,7 @@ should be identical to itself.}
 
 \item{return_full}{if TRUE, return a data.frame
 with all metadata and cast objects. If FALSE,
-just return max aff_thres.}
+just return row with best clustering.}
 
 \item{aff_range}{minimum and maximum aff_thres
 to test. Best left as default to test the full
