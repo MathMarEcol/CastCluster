@@ -58,7 +58,7 @@ cast_optimal <- function(sim_mat,
   if(return_full) {
     return(ret)
   } else {
-    return(ret[,which.max(ret$gamma))
+    return(ret[,which.max(ret$gamma)])
   }
 }
 
