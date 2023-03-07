@@ -9,6 +9,8 @@
 #' is optimised at aff_thres = mean(sim_mat) when
 #' the diagonals are ignored, which would make
 #' this function redundant.
+#' NOTE: I did find a counter-example where the mean
+#' affinity was not the peak Gamma statistic.
 #'
 #' @param sim_mat A square numeric matrix with values
 #' in the range [0, 1]. 0 indicates maximimum
@@ -35,10 +37,10 @@
 #' @export
 cast_optimal <- function(sim_mat,
                          return_full = TRUE,
-                         aff_range = c(0,1),
+                         aff_range = range(sim_mat[upper.tri(sim_mat)]),
                          m = 4,
-                         min_range = 0.01,
-                         min_tol = 0.01) {
+                         min_range = aff_range/100,
+                         min_tol = 0.0001) {
   ##Check input is meaningful
   assertthat::assert_that(assertthat::are_equal(dim(sim_mat)[1], dim(sim_mat)[2])) ##sim_mat must be square
   assertthat::assert_that(m >= 3)

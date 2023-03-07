@@ -7,10 +7,10 @@
 cast_optimal(
   sim_mat,
   return_full = TRUE,
-  aff_range = c(0, 1),
+  aff_range = range(sim_mat[upper.tri(sim_mat)]),
   m = 4,
-  min_range = 0.01,
-  min_tol = 0.01
+  min_range = aff_range/100,
+  min_tol = 1e-04
 )
 }
 \arguments{
@@ -52,4 +52,6 @@ It is possible that Hubert's \eqn{\Gamma} statistic is
 is optimised at aff_thres = mean(sim_mat) when
 the diagonals are ignored, which would make
 this function redundant.
+NOTE: I did find a counter-example where the mean
+affinity was not the peak Gamma statistic.
 }
