@@ -37,7 +37,7 @@ cast_stabilize_batch <- function(cast_obj, aff_thres, sim_mat, max_iter = 20){
     updates <- do.call("rbind", updates)
     ##Apply updates
     if(!is.null(updates)){
-      message("iteration [", iter, "] reassigned [", nrow(updates),"] samples")
+      #message("iteration [", iter, "] reassigned [", nrow(updates),"] samples")
       for(upd in 1:nrow(updates) ){
         cast_obj[[ updates[upd,"old"] ]] <- cast_obj[[ updates[upd,"old"] ]][cast_obj[[ updates[upd,"old"] ]] != updates[upd,"u"]  ] 
         cast_obj[[updates[upd,"new"]]] <- c(cast_obj[[updates[upd,"new"]]], updates[upd,"u"])
@@ -170,7 +170,7 @@ cast_stabilize <- function(cast_obj, aff_thres, sim_mat, max_iter = nrow(sim_mat
 
         if(length(from_clust) == 0) {
           ##from cluster is empty: remove
-          message("cluster [", upd$from, "] has been removed.")
+          #message("cluster [", upd$from, "] has been removed.")
           cast_obj[[upd$from]] <- NULL
           clust_aff <- clust_aff[, -upd$from]
           within_clust_affs  <- within_clust_affs[-upd$from]

@@ -80,7 +80,7 @@ cast_alg_cautious <- function(sim_mat, aff_thres, max_iter = 20){
       if(all(!new_clust)){
         ##cluster is empty
         valid_seeds[next_seed] <- FALSE
-        message("seeds left: [", sum(valid_seeds), "]")
+        #message("seeds left: [", sum(valid_seeds), "]")
         if(all(!valid_seeds)){
           ##no more valid seeds exist, all have been tried, create a leftovers cluster
           new_clust <- spares
@@ -96,8 +96,8 @@ cast_alg_cautious <- function(sim_mat, aff_thres, max_iter = 20){
 
 
 
-    message("cluster assigned of size [", sum(new_clust), "]")
-    message("[", sum(spares), "] sites left to assign.")
+    #message("cluster assigned of size [", sum(new_clust), "]")
+    #message("[", sum(spares), "] sites left to assign.")
     assertthat::assert_that(debug_spares_expected == (debug_spares_loop - sum(new_clust)))
 
     ##now, stabilize the clusters.
@@ -110,7 +110,7 @@ cast_alg_cautious <- function(sim_mat, aff_thres, max_iter = 20){
       spares <- rep(FALSE, n)
       spares[clust[[clust_id +1]] ] <- TRUE
     }
-    message("[", sum(spares), "] sites left to assign after stabilize step.")
+    #message("[", sum(spares), "] sites left to assign after stabilize step.")
     clust_id <- clust_id + 1
   }
 

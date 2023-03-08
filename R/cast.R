@@ -98,7 +98,7 @@ cast_alg <- function(sim_mat, aff_thres){
         ##If, somehow, we end up with a different final element to the seed, restart with
         ## different seed
         valid_seeds[next_seed] <- FALSE
-        message("seeds left: [", sum(valid_seeds), "]")
+        #message("seeds left: [", sum(valid_seeds), "]")
         if(all(!valid_seeds)){
           ##no more valid seeds exist, all have been tried, create a leftovers cluster
           new_clust <- spares
@@ -112,8 +112,8 @@ cast_alg <- function(sim_mat, aff_thres){
         break
       }
     }
-    message("cluster assigned of size [", sum(new_clust), "]")
-    message("[", sum(spares), "] sites left to assign.")
+    #message("cluster assigned of size [", sum(new_clust), "]")
+    #message("[", sum(spares), "] sites left to assign.")
     assertthat::assert_that(debug_spares_expected == (debug_spares_loop - sum(new_clust)))
     clust[[clust_id]] <- which(new_clust)
     clust_id <- clust_id + 1

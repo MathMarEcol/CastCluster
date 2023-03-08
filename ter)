@@ -1,0 +1,171 @@
+microbenchmark         package:microbenchmark          R Documentation
+
+_S_u_b-_m_i_l_l_i_s_e_c_o_n_d _a_c_c_u_r_a_t_e _t_i_m_i_n_g _o_f _e_x_p_r_e_s_s_i_o_n _e_v_a_l_u_a_t_i_o_n.
+
+_D_e_s_c_r_i_p_t_i_o_n:
+
+     ‘microbenchmark’ serves as a more accurate replacement of the
+     often seen ‘system.time(replicate(1000, expr))’ expression. It
+     tries hard to accurately measure only the time it takes to
+     evaluate ‘expr’. To achieved this, the sub-millisecond (supposedly
+     nanosecond) accurate timing functions most modern operating
+     systems provide are used. Additionally all evaluations of the
+     expressions are done in C code to minimize any overhead.
+
+_U_s_a_g_e:
+
+     microbenchmark(
+       ...,
+       list = NULL,
+       times = 100L,
+       unit = NULL,
+       check = NULL,
+       control = list(),
+       setup = NULL
+     )
+     
+_A_r_g_u_m_e_n_t_s:
+
+     ...: Expressions to benchmark.
+
+    list: List of unevaluated expressions to benchmark.
+
+   times: Number of times to evaluate each expression.
+
+    unit: Default unit used in ‘summary’ and ‘print’.
+
+   check: A function to check if the expressions are equal. By default
+          ‘NULL’ which omits the check. In addition to a function, a
+          string can be supplied. The string ‘equal’ will compare all
+          values using ‘all.equal’, ‘equivalent’ will compare all
+          values using ‘all.equal’ and check.attributes = FALSE, and
+          ‘identical’ will compare all values using ‘identical’.
+
+ control: List of control arguments. See Details.
+
+   setup: An unevaluated expression to be run (untimed) before each
+          benchmark expression.
+
+_D_e_t_a_i_l_s:
+
+     This function is only meant for micro-benchmarking small pieces of
+     source code and to compare their relative performance
+     characteristics. You should generally avoid benchmarking larger
+     chunks of your code using this function. Instead, try using the R
+     profiler to detect hot spots and consider rewriting them in C/C++
+     or FORTRAN.
+
+     The ‘control’ list can contain the following entries:
+
+     order the order in which the expressions are evaluated.  “random”
+          (the default) randomizes the execution order, “inorder”
+          executes each expression in order and “block” executes all
+          repetitions of each expression as one block.
+
+     warmup the number of warm-up iterations performed before the
+          actual benchmark. These are used to estimate the timing
+          overhead as well as spinning up the processor from any sleep
+          or idle states it might be in. The default value is 2.
+
+_V_a_l_u_e:
+
+     Object of class ‘microbenchmark’, a data frame with columns ‘expr’
+     and ‘time’. ‘expr’ contains the deparsed expression as passed to
+     ‘microbenchmark’ or the name of the argument if the expression was
+     passed as a named argument. ‘time’ is the measured execution time
+     of the expression in nanoseconds. The order of the observations in
+     the data frame is the order in which they were executed.
+
+_N_o_t_e:
+
+     Depending on the underlying operating system, different methods
+     are used for timing. On Windows the ‘QueryPerformanceCounter’
+     interface is used to measure the time passed. For Linux the
+     ‘clock_gettime’ API is used and on Solaris the ‘gethrtime’
+     function. Finally on MacOS X the, undocumented,
+     ‘mach_absolute_time’ function is used to avoid a dependency on the
+     CoreServices Framework.
+
+     Before evaluating each expression ‘times’ times, the overhead of
+     calling the timing functions and the C function call overhead are
+     estimated. This estimated overhead is subtracted from each
+     measured evaluation time. Should the resulting timing be negative,
+     a warning is thrown and the respective value is replaced by ‘0’.
+     If the timing is zero, a warning is raised. Should all evaluations
+     result in one of the two error conditions described above, an
+     error is raised.
+
+     One platform on which the clock resolution is known to be too low
+     to measure short runtimes with the required precision is Oracle(R)
+     Solaris on some SPARC(R) hardware. Reports of other platforms with
+     similar problems are welcome. Please contact the package
+     maintainer.
+
+_A_u_t_h_o_r(_s):
+
+     Olaf Mersmann
+
+_S_e_e _A_l_s_o:
+
+     ‘print.microbenchmark’ to display and ‘boxplot.microbenchmark’ or
+     ‘autoplot.microbenchmark’ to plot the results.
+
+_E_x_a_m_p_l_e_s:
+
+     ## Measure the time it takes to dispatch a simple function call
+     ## compared to simply evaluating the constant \code{NULL}
+     f <- function() NULL
+     res <- microbenchmark(NULL, f(), times=1000L)
+     
+     ## Print results:
+     print(res)
+     
+     ## Plot results:
+     boxplot(res)
+     
+     ## Pretty plot:
+     if (requireNamespace("ggplot2")) {
+       ggplot2::autoplot(res)
+     }
+     
+     ## Example check usage
+     my_check <- function(values) {
+       all(sapply(values[-1], function(x) identical(values[[1]], x)))
+     }
+     
+     f <- function(a, b)
+       2 + 2
+     
+     a <- 2
+     ## Check passes
+     microbenchmark(2 + 2, 2 + a, f(2, a), f(2, 2), check=my_check)
+     ## Not run:
+     
+     a <- 3
+     ## Check fails
+     microbenchmark(2 + 2, 2 + a, f(2, a), f(2, 2), check=my_check)
+     ## End(Not run)
+     
+     ## Example setup usage
+     set.seed(21)
+     x <- rnorm(10)
+     microbenchmark(x, rnorm(10), check=my_check, setup=set.seed(21))
+     ## Will fail without setup
+     ## Not run:
+     
+     microbenchmark(x, rnorm(10), check=my_check)
+     ## End(Not run)
+     
+     ## using check
+     a <- 2
+     microbenchmark(2 + 2, 2 + a, sum(2, a), sum(2, 2), check='identical')
+     microbenchmark(2 + 2, 2 + a, sum(2, a), sum(2, 2), check='equal')
+     attr(a, 'abc') <- 123
+     microbenchmark(2 + 2, 2 + a, sum(2, a), sum(2, 2), check='equivalent')
+     ## check='equal' will fail due to difference in attribute
+     ## Not run:
+     
+     microbenchmark(2 + 2, 2 + a, sum(2, a), sum(2, 2), check='equal')
+     ## End(Not run)
+     
+

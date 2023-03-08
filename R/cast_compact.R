@@ -32,7 +32,7 @@ cast_compact_batch <- function(cast_ob, sim_mat, aff_thres, max_iter = nrow(sim_
       }, cast_ob = cast_ob, sim_mat = sim_mat)
     updates <- do.call("rbind", updates)
     ##Apply updates
-      message("reassigned [", nrow(updates),"] samples from cluster [", clust_id, "]")
+      #message("reassigned [", nrow(updates),"] samples from cluster [", clust_id, "]")
       for(upd in 1:nrow(updates) ){
         cast_test[[ updates[upd,"old"] ]] <- cast_test[[ updates[upd,"old"] ]][cast_test[[ updates[upd,"old"] ]] != updates[upd,"site"]  ] 
         cast_test[[updates[upd,"new"]]] <- c(cast_test[[updates[upd,"new"]]], updates[upd,"site"])
@@ -42,10 +42,10 @@ cast_compact_batch <- function(cast_ob, sim_mat, aff_thres, max_iter = nrow(sim_
 
     ##test new cluster affinities
     new_aff <- do.call("c", aff_clust_inner(cast_obj = cast_test, sim_mat = sim_mat))
-    message("min_new_aff: [", min(new_aff), "] and threshold of [", aff_thres, "]. attempt: [", i, "]")
+    #message("min_new_aff: [", min(new_aff), "] and threshold of [", aff_thres, "]. attempt: [", i, "]")
     cast_test_stab <- cast_stabilize_batch(cast_obj = cast_test, aff_thres = aff_thres, sim_mat = sim_mat, max_iter = max_iter )
     new_aff_stab <- do.call("c", aff_clust_inner(cast_obj = cast_test_stab, sim_mat = sim_mat))
-    message("min_new_aff_stab: [", min(new_aff_stab), "] and threshold of [", aff_thres, "]")
+    #message("min_new_aff_stab: [", min(new_aff_stab), "] and threshold of [", aff_thres, "]")
     if(min(new_aff_stab) >= aff_thres && min(new_aff) >= aff_thres){
       cast_ob <- cast_test_stab
       cluster_size <- data.frame(clust = 1:length(cast_ob), size = sapply(cast_ob, length))
@@ -212,7 +212,7 @@ cast_compact <- function(cast_ob, sim_mat, aff_thres, max_iter = nrow(sim_mat)*2
 
           if(length(from_clust) == 0) {
             ##from cluster is empty: remove
-            message("cluster [", upd$from, "] has been removed.")
+            #message("cluster [", upd$from, "] has been removed.")
             cast_test[[upd$from]] <- NULL
             clust_aff <- clust_aff[, -upd$from]
             within_clust_affs  <- within_clust_affs[-upd$from]
@@ -251,10 +251,10 @@ cast_compact <- function(cast_ob, sim_mat, aff_thres, max_iter = nrow(sim_mat)*2
       clust_aff_master <- clust_aff
       clust_remove <- 0
 
-      message("Disbanded cluster [", clust_id, "]")
+      #message("Disbanded cluster [", clust_id, "]")
     } else {
-      message("Could not disband cluster [", clust_id, "]")
-      message("clust_remove: [", clust_remove, "]")
+      ##message("Could not disband cluster [", clust_id, "]")
+      #message("clust_remove: [", clust_remove, "]")
     }
 
     ##try next cluster
@@ -263,7 +263,7 @@ cast_compact <- function(cast_ob, sim_mat, aff_thres, max_iter = nrow(sim_mat)*2
       break
     }
   }
-  message("New number of clusters: [", length(cast_ob), "]")
+  #message("New number of clusters: [", length(cast_ob), "]")
   return(cast_ob)
 }
 
