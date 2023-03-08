@@ -9,7 +9,7 @@ cast_optimal(
   return_full = TRUE,
   aff_range = range(sim_mat[upper.tri(sim_mat)]),
   m = 4,
-  min_range = aff_range/100,
+  min_range = diff(aff_range)/100,
   min_tol = 1e-04
 )
 }

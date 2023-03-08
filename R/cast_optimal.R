@@ -39,7 +39,7 @@ cast_optimal <- function(sim_mat,
                          return_full = TRUE,
                          aff_range = range(sim_mat[upper.tri(sim_mat)]),
                          m = 4,
-                         min_range = aff_range/100,
+                         min_range = diff(aff_range)/100,
                          min_tol = 0.0001) {
   ##Check input is meaningful
   assertthat::assert_that(assertthat::are_equal(dim(sim_mat)[1], dim(sim_mat)[2])) ##sim_mat must be square
