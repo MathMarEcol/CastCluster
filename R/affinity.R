@@ -8,9 +8,13 @@
 #' cast_obj
 
 #'find which clusters a site could belong, given aff_thres
-#'returns a data.frame with site, cluster, affinity
-predict_clust <- function(cast_obj, new_sim_mat){
-  do.call("rbind", lapply(1:length(cast_obj), function(clust, cast_obj, new_sim_mat){
+#'returns a data.frame with site, cluster, affinity, and possibly probability
+predict_clust <- function(cast_obj,
+                          new_sim_mat,
+                          type = c("max", "raw", "probability")
+                          ){
+    type <- match.arg(type)
+    raw <- do.call("rbind", lapply(seq_along(cast_obj), function(clust, cast_obj, new_sim_mat){
     if(length(cast_obj[[clust]]) > 1){
       return(data.frame(x_row = seq_len(nrow(new_sim_mat)),
                         clust = clust,
@@ -21,6 +25,28 @@ predict_clust <- function(cast_obj, new_sim_mat){
                         aff = new_sim_mat[, cast_obj[[clust]]]))
     }
   }, cast_obj = cast_obj, new_sim_mat = new_sim_mat))
+
+    switch(type,
+           "max" = {
+               ## For each x_row, find clust associated with max aff
+               rbind(lapply(unique(raw$x_row),
+                      function(r){
+                          subset <- raw[raw$x_row == r, ]
+                          max_clust <- which.max(subset$aff)
+                          return(subset[, max_clust])
+                      }))
+           },
+           "raw" = raw,
+           "probability" = {
+               ## Replace aff with probability of membership
+               rbind(lapply(unique(raw$x_row),
+                            function(r){
+                                subset <- raw[raw$x_row == r, ]
+                                aff_total <- sum(subset$aff)
+                                subset$prob <- subset$aff/aff_total
+                                return(subset)
+                            }))
+           })
 }
 
 
