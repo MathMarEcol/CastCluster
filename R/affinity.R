@@ -12,11 +12,11 @@
 predict_clust <- function(cast_obj, new_sim_mat){
   do.call("rbind", lapply(1:length(cast_obj), function(clust, cast_obj, new_sim_mat){
     if(length(cast_obj[[clust]]) > 1){
-      return(data.frame(x_row = 1:nrow(new_sim_mat),
+      return(data.frame(x_row = seq_len(nrow(new_sim_mat)),
                         clust = clust,
                         aff = rowSums(new_sim_mat[, cast_obj[[clust]]])/length(cast_obj[[clust]])))
     } else {
-      return(data.frame(x_row = 1:nrow(new_sim_mat),
+      return(data.frame(x_row = seq_len(nrow(new_sim_mat)),
                         clust = clust,
                         aff = new_sim_mat[, cast_obj[[clust]]]))
     }
@@ -76,7 +76,7 @@ aff_func <- function(x, u, sim_mat){
 #' Affinity of each element to each cluster
 aff_clust_sum <- function(sim_mat, cast_ob){
   diag(sim_mat) <- 0
-  do.call(cbind, lapply(1:length(cast_ob), 
+  do.call(cbind, lapply(seq_along(cast_ob), 
                         function(clust, sim_mat, cast_ob){
 
                           ##get the affinity to each cluster
@@ -99,7 +99,7 @@ aff_clust_sum <- function(sim_mat, cast_ob){
 #' are set to NA  `diag(sim_mat) <- NA`
 #' to speed up computation.
 .aff_clust_mean <- function(sim_mat, cast_ob, aff_thres){
-  aff_means <- do.call(cbind, lapply(1:length(cast_ob),
+  aff_means <- do.call(cbind, lapply(seq_along(cast_ob),
                         function(clust, sim_mat, cast_ob){
 
                           ##get the affinity to each cluster
@@ -127,7 +127,7 @@ aff_clust_mean <- function(sim_mat, cast_ob, aff_thres){
 
 #' Not used, behaves like aff_clust_mean
 aff_clust_all <- function(sim_mat, cast_ob){
-  do.call(cbind, lapply(1:length(cast_ob),
+  do.call(cbind, lapply(seq_along(cast_ob),
                         function(clust, sim_mat, cast_ob){
 
                           ##get the affinity to each cluster
@@ -146,7 +146,7 @@ aff_clust_all <- function(sim_mat, cast_ob){
 #' returns a long form dataframe
 aff_cluster_between <- function(cast_obj, sim_mat, aff_thres){
   diag(sim_mat) <- NA
-  pairs <- expand.grid(1:length(cast_obj), 1:length(cast_obj))
+  pairs <- expand.grid(seq_along(cast_obj), seq_along(cast_obj))
   affs <- apply(pairs, 1, function(p, cast_obj, sim_mat){
     elems_a <- cast_obj[[p[1]]]
     elems_b <- cast_obj[[p[2]]]
