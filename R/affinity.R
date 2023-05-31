@@ -15,38 +15,23 @@ predict_clust <- function(cast_obj,
                           type = c("max", "raw", "probability")
                           ){
     type <- match.arg(type)
-    raw <- do.call("rbind", lapply(seq_along(cast_obj), function(clust, cast_obj, new_sim_mat){
-    if(length(cast_obj[[clust]]) > 1){
-      return(data.frame(x_row = seq_len(nrow(new_sim_mat)),
-                        clust = clust,
-                        aff = rowSums(new_sim_mat[, cast_obj[[clust]]])/length(cast_obj[[clust]])))
-    } else {
-      return(data.frame(x_row = seq_len(nrow(new_sim_mat)),
-                        clust = clust,
-                        aff = new_sim_mat[, cast_obj[[clust]]]))
-    }
-  }, cast_obj = cast_obj, new_sim_mat = new_sim_mat))
+    raw <- vapply(seq_along(cast_obj), function(clust, cast_obj, new_sim_mat){
+				if(length(cast_obj[[clust]]) > 1){
+						return(.rowMeans(new_sim_mat[, cast_obj[[clust]]], nrow(new_sim_mat), length(cast_obj[[clust]])))
+				} else {
+						return(new_sim_mat[, cast_obj[[clust]]])
+				}
+		}, numeric(nrow(new_sim_mat)), cast_obj = cast_obj, new_sim_mat = new_sim_mat)
 
     switch(type,
            "max" = {
                ## For each x_row, find clust associated with max aff
-               rbind(lapply(unique(raw$x_row),
-                      function(r){
-                          subset <- raw[raw$x_row == r, ]
-                          max_clust <- which.max(subset$aff)
-                          return(subset[, max_clust])
-                      }))
+               apply(raw, 1, which.max)
            },
            "raw" = raw,
            "probability" = {
                ## Replace aff with probability of membership
-               rbind(lapply(unique(raw$x_row),
-                            function(r){
-                                subset <- raw[raw$x_row == r, ]
-                                aff_total <- sum(subset$aff)
-                                subset$prob <- subset$aff/aff_total
-                                return(subset)
-                            }))
+               raw / rowSums(raw)
            })
 }
 
