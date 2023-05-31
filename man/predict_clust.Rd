@@ -11,9 +11,9 @@ are n by length(cast_obj[[1]])
 the rows are not expected to exist in
 cast_obj
 find which clusters a site could belong, given aff_thres
-returns a data.frame with site, cluster, affinity}
+returns a data.frame with site, cluster, affinity, and possibly probability}
 \usage{
-predict_clust(cast_obj, new_sim_mat)
+predict_clust(cast_obj, new_sim_mat, type = c("max", "raw", "probability"))
 }
 \description{
 Assign site to cluster
@@ -25,5 +25,5 @@ are n by length(cast_obj[[1]])
 the rows are not expected to exist in
 cast_obj
 find which clusters a site could belong, given aff_thres
-returns a data.frame with site, cluster, affinity
+returns a data.frame with site, cluster, affinity, and possibly probability
 }

@@ -9,6 +9,7 @@
 
 #'find which clusters a site could belong, given aff_thres
 #'returns a data.frame with site, cluster, affinity, and possibly probability
+#' @export
 predict_clust <- function(cast_obj,
                           new_sim_mat,
                           type = c("max", "raw", "probability")
