@@ -10,10 +10,20 @@ so the dimensions of the matrix
 are n by length(cast_obj[[1]])
 the rows are not expected to exist in
 cast_obj
+If aff_thres is provided, set max to NA if all
+clusters fall below aff_thres. Useful for
+identifying new sites that are far from any
+existing clusters, and may represent
+novel environmental conditions.
 find which clusters a site could belong, given aff_thres
 returns a data.frame with site, cluster, affinity, and possibly probability}
 \usage{
-predict_clust(cast_obj, new_sim_mat, type = c("max", "raw", "probability"))
+predict_clust(
+  cast_obj,
+  new_sim_mat,
+  aff_thres = 0,
+  type = c("max", "raw", "probability")
+)
 }
 \description{
 Assign site to cluster
@@ -24,6 +34,11 @@ so the dimensions of the matrix
 are n by length(cast_obj[[1]])
 the rows are not expected to exist in
 cast_obj
+If aff_thres is provided, set max to NA if all
+clusters fall below aff_thres. Useful for
+identifying new sites that are far from any
+existing clusters, and may represent
+novel environmental conditions.
 find which clusters a site could belong, given aff_thres
 returns a data.frame with site, cluster, affinity, and possibly probability
 }

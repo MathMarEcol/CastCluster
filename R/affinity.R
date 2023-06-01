@@ -6,12 +6,18 @@
 #' are n by length(cast_obj[[1]])
 #' the rows are not expected to exist in
 #' cast_obj
+#' If aff_thres is provided, set max to NA if all
+#' clusters fall below aff_thres. Useful for
+#' identifying new sites that are far from any
+#' existing clusters, and may represent
+#' novel environmental conditions.
 
 #'find which clusters a site could belong, given aff_thres
 #'returns a data.frame with site, cluster, affinity, and possibly probability
 #' @export
 predict_clust <- function(cast_obj,
                           new_sim_mat,
+													aff_thres = 0,
                           type = c("max", "raw", "probability")
                           ){
     type <- match.arg(type)
@@ -23,18 +29,25 @@ predict_clust <- function(cast_obj,
 				}
 		}, numeric(nrow(new_sim_mat)), cast_obj = cast_obj, new_sim_mat = new_sim_mat)
 
-    switch(type,
+    out <- switch(type,
            "max" = {
                ## For each x_row, find clust associated with max aff
-               apply(raw, 1, which.max)
+               apply(raw, 1,
+										 function(xr, cast_obj) {
+												 if (all(xr < aff_thres)){
+														 return(NA)
+												 } else {
+														 return(which.max(xr))
+												 }
+										 }, cast_obj = cast_obj)
            },
            "raw" = raw,
            "probability" = {
                ## Replace aff with probability of membership
                raw / rowSums(raw)
            })
+		return(out)
 }
-
 
 #' Calculate membership matix from cast object
 #'
