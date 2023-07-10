@@ -99,7 +99,7 @@ cast_optimal_recurse <- function(sim_mat,
                                              k = length(clust_stabilise),
                                              cast_ob = I(list(clust_stabilise)),
                                              rec_depth = rec_depth))
-                         },  sim_mat = sim_mat, rec_depth = rec_depth)
+                         },  sim_mat = sim_mat, rec_depth = rec_depth, future.seed = TRUE)
   )
 
   ## Find the best gamma score
