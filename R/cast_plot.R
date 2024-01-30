@@ -1,7 +1,7 @@
 #' ggplot object of the similarity matrix
 #'
 #' Without a cast object, it will just plot them
-#' similarity matrix as is, with no particular order.
+#' similarity matrix as is, with the order shuffled randomly.
 #'
 #' With a cast object, the similarity matrix will
 #' be reordered to put sites in the same cluster
@@ -13,6 +13,10 @@
 #'
 #' if highlight = TRUE, then rectangles will be drawn
 #' around each cluster.
+#'
+#' If the mean similarity is less than log_trans_thres, the
+#' similarity scores will be coloured on a log scale to
+#' allow small similarities to be visualised more easily.
 #' @export
 gg_sim_mat <- function(sim_mat,
                        cast_ob = NULL,
@@ -20,7 +24,8 @@ gg_sim_mat <- function(sim_mat,
                        sort_among_clust = TRUE,
                        sort_within_clust = TRUE,
                        highlight = FALSE,
-                       legend_label = "Similarity"
+                       legend_label = "Similarity",
+                       log_trans_thres = 1e-2
                        ){
 
   if(!is.null(cast_ob)) {
@@ -74,7 +79,7 @@ gg_sim_mat <- function(sim_mat,
     }
 
   } else {
-    site_reorder <-  seq.int(1, nrow(sim_mat))
+    site_reorder <-  sample.int(nrow(sim_mat))
   }
   sim_mat_reorder <- sim_mat[site_reorder, site_reorder]
   sim_mat_long <- data.frame(expand.grid(1:nrow(sim_mat), 1:ncol(sim_mat)), as.vector(as.matrix(sim_mat_reorder)))
@@ -82,12 +87,17 @@ gg_sim_mat <- function(sim_mat,
   p <- ggplot2::ggplot(data = sim_mat_long,
                   mapping = ggplot2::aes(x = x, y = y, fill = p)) +
     ggplot2::geom_raster() +
-    ggplot2::scale_fill_gradient(low = "black", high = "white") +
     ggplot2::coord_fixed() +
     ggthemes::theme_tufte() +
     ggplot2::scale_y_reverse() +
     ggplot2::scale_x_continuous(position = "top") +
-    ggplot2::labs(fill = legend_label, x = NULL, y = NULL) 
+    ggplot2::labs(fill = legend_label, x = NULL, y = NULL) +
+    if ( mean(sim_mat[lower.tri(sim_mat)]) < log_trans_thres ) {
+      ggplot2::scale_fill_gradient(low = "black", high = "white", breaks = c(0,log_trans_thres,1), trans = scales::pseudo_log_trans(base = 10, sigma = log_trans_thres/(nrow(sim_mat)*(nrow(sim_mat)-1)/2) ))
+    } else {
+      ggplot2::scale_fill_gradient(low = "black", high = "white")
+    }
+
   if(highlight & !is.null(cast_ob)){
     p <- p + ggplot2::annotate(geom = "rect", xmin = rects$xmin, ymin = rects$xmin, xmax = rects$xmax, ymax = rects$xmax,  colour = "red", fill = NA)
   }
