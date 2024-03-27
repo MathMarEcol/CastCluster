@@ -1,5 +1,5 @@
 Package: castcluster
-Title: R implementation of the CAST algorithm (Ben-Dor et al. 1999)
+Title: CASTER
 Version: 0.0.0.9000
 Authors@R: 
     person(given = "Philip",
@@ -7,8 +7,8 @@ Authors@R:
            role = c("aut", "cre"),
            email = "philip.dyer1@uqconnect.edu.au",
            comment = c(ORCID = ""))
-Description: Provides the CAST algorithm by Ben-Dor et al. 1999.
-License: MIT + file LICENSE
+Description: Provides the CASTER algorithm. Also provides the CAST algorithm by Ben-Dor et al. (1999) implemented in R.
+License: GPL-3
 Encoding: UTF-8
 LazyData: true
 Imports: 
