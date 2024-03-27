@@ -1,3 +1,5 @@
+# Copyright 2017-2024 Philip Dyer
+# SPDX-License-Identifier: GPL-3.0-only
 #' heirarchical grouping of cast objects
 #' the aff_thres_vec will be sorted
 #' this function is recursive

@@ -1,3 +1,5 @@
+# Copyright 2017-2024 Philip Dyer
+# SPDX-License-Identifier: GPL-3.0-only
 #' ggplot object of the similarity matrix
 #'
 #' Without a cast object, it will just plot them

@@ -1,3 +1,5 @@
+# Copyright 2017-2024 Philip Dyer
+# SPDX-License-Identifier: GPL-3.0-only
 #' cast_compact takes a stabilized cast object, and deletes
 #' one cluster, assignes the sites to nearest clusters,
 #' stabilizes again, and

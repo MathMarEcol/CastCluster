@@ -1,3 +1,5 @@
+# Copyright 2017-2024 Philip Dyer
+# SPDX-License-Identifier: GPL-3.0-only
 #' Convert CAST object to a data.frame mapping elements to clusters
 #'
 #' CAST objects are implemented as a list of clusters, with each

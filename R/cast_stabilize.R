@@ -1,3 +1,5 @@
+# Copyright 2017-2024 Philip Dyer
+# SPDX-License-Identifier: GPL-3.0-only
 #' Stabilize cluster membership
 #'
 #' cast_stabilize_batch() does a bulk update, finding all sites that
